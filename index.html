@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alice's Adventures in Wonderland</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Alice's Adventures in Wonderland</h1>
+        <h2>Льюис Кэрролл - Алиса в стране чудес</h2>
+        <div id="chapters-container"></div>
+    </div>
+
+    <script>
+        // Загрузка данных на страницу
+        async function loadBookData() {
+            try {
+                const englishResponse = await fetch('alice_in_wonderland.json');
+                const englishData = await englishResponse.json();
+                console.log("English Data:", englishData);  // Проверка данных
+
+                const russianResponse = await fetch('alice_in_wonderland_rus.json');
+                const russianData = await russianResponse.json();
+                console.log("Russian Data:", russianData);  // Проверка данных
+
+                // Проверка на наличие данных в JSON
+                if (!englishData || !russianData) {
+                    throw new Error("Один из JSON файлов пуст или некорректен.");
+                }
+
+                const englishChapters = Object.values(englishData);
+                const russianChapters = Object.values(russianData);
+
+                // Проверка на количество глав
+                if (englishChapters.length !== russianChapters.length) {
+                    console.error("Количество глав в английском и русском JSON не совпадает!");
+                    return;
+                }
+
+                generateChapters(englishChapters, russianChapters);
+            } catch (error) {
+                console.error("Ошибка загрузки данных:", error);
+                alert("Произошла ошибка при загрузке данных. Проверьте консоль для подробностей.");
+            }
+        }
+
+        // Генерация HTML для глав
+        function generateChapters(englishChapters, russianChapters) {
+            const container = document.getElementById("chapters-container");
+
+            if (englishChapters.length === 0 || russianChapters.length === 0) {
+                console.error("Отсутствуют главы для отображения!");
+                return;
+            }
+
+            englishChapters.forEach((engChapter, index) => {
+                const rusChapter = russianChapters[index];
+
+                // Проверка наличия текста в главах
+                if (!engChapter.text || !rusChapter.text) {
+                    console.error(`Отсутствует текст для главы: ${engChapter.title}`);
+                    return;
+                }
+
+                const chapterDiv = document.createElement("div");
+                chapterDiv.classList.add("chapter");
+
+                // Создаем блок для английской версии
+                const englishDiv = document.createElement("div");
+                englishDiv.classList.add("english");
+                englishDiv.innerHTML = `<h3>${engChapter.title}</h3>`;
+                engChapter.text.forEach(paragraph => {
+                    const p = document.createElement("p");
+                    p.textContent = paragraph;  // Используем textContent для безопасного отображения текста
+                    englishDiv.appendChild(p);
+                });
+
+                // Создаем блок для русской версии
+                const russianDiv = document.createElement("div");
+                russianDiv.classList.add("russian");
+                russianDiv.innerHTML = `<h3>${rusChapter.title}</h3>`;
+                rusChapter.text.forEach(paragraph => {
+                    const p = document.createElement("p");
+                    p.textContent = paragraph;  // Используем textContent для безопасного отображения текста
+                    russianDiv.appendChild(p);
+                });
+
+                chapterDiv.appendChild(englishDiv);
+                chapterDiv.appendChild(russianDiv);
+                container.appendChild(chapterDiv);
+            });
+        }
+
+        // Загрузка данных при загрузке страницы
+        loadBookData();
+    </script>
+</body>
+</html>
